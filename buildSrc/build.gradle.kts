@@ -1,5 +1,15 @@
 plugins {
+    `java-gradle-plugin`
     `kotlin-dsl`
+}
+
+gradlePlugin {
+    plugins {
+        register("custom-gradle-plugin") {
+            id = "custom-gradle-plugin"
+            implementationClass = "CustomGradlePlugin"
+        }
+    }
 }
 
 repositories {

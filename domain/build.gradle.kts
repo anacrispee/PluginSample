@@ -1,9 +1,8 @@
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
+    id("custom-gradle-plugin")
 }
-
-apply<CustomGradlePlugin>()
 
 android {
     namespace = "com.example.domain"
