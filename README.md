@@ -1,5 +1,5 @@
 # 🧩 PluginSample
-### 🇧🇷 Português
+## 🇧🇷 Português
 
 Um projeto exemplo de Plugin Gradle feito para centralizar e compartilhar lógica de configuração para todos os módulos em um projeto Android multimódulo.
 
@@ -165,3 +165,181 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 }
 ```
+## Referências
+* [Using Plugins - Gradle Documentation](https://docs.gradle.org/current/userguide/plugins.html)
+* [Understanding Plugins - Gradle Documentation](https://docs.gradle.org/current/userguide/custom_plugins.html)
+* [How to Build a Custom Gradle Plugin to Share Project Config - Multi-Module Architecture](https://www.youtube.com/watch?v=kFWmL5opJNk&ab_channel=PhilippLackner)
+
+--- 
+
+## 🇺🇸 English
+An example Gradle plugin project designed to centralize and share configuration logic across all modules in a multi-module Android project.
+
+This plugin is useful as it centralizes all build configurations in one place, making it easier to maintain and scale an app. It also reduces inconsistencies and repetitive work when managing these configuration files.
+
+## Plugin Creation
+
+### 1. Creating the `buildSrc` module
+
+In Android Studio’s Project view, create a new module or directory named `buildSrc`.
+
+If you choose to create a directory, manually create a `build.gradle.kts` file inside it and add the following:
+
+```kotlin
+plugins {
+    `java-gradle-plugin`
+    `kotlin-dsl`
+}
+```
+
+- `java-gradle-plugin`: tells Gradle you're creating a custom plugin.
+- `kotlin-dsl`: enables Kotlin syntax in the Gradle build script.
+
+### 2. Creating the Plugin class
+
+Now create a Kotlin class inside `src/main/kotlin` with your plugin logic.
+
+Example:
+
+```kotlin
+import com.android.build.gradle.LibraryExtension
+import org.gradle.api.JavaVersion
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+class CustomGradlePlugin : Plugin<Project> {
+    override fun apply(project: Project) {
+        applyPlugins(project)
+        setProjectConfig(project)
+    }
+
+    private fun applyPlugins(project: Project) {
+        project.apply {
+            plugin("android-library")
+            plugin("kotlin-android")
+        }
+    }
+
+    private fun setProjectConfig(project: Project) {
+        project.android().apply {
+            defaultConfig {
+                minSdk = ProjectConfig.MIN_SDK
+                compileSdk = ProjectConfig.COMPILE_SDK
+                testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+            }
+
+            compileOptions {
+                sourceCompatibility = JavaVersion.VERSION_1_8
+                targetCompatibility = JavaVersion.VERSION_1_8
+            }
+
+            buildTypes {
+                release {
+                    isMinifyEnabled = false
+                    proguardFiles(
+                        getDefaultProguardFile("proguard-android-optimize.txt"),
+                        "proguard-rules.pro"
+                    )
+                }
+            }
+
+            project.tasks.withType(KotlinCompile::class.java).configureEach {
+                kotlinOptions {
+                    jvmTarget = "18"
+                }
+            }
+        }
+    }
+
+    private fun Project.android() : LibraryExtension {
+        return extensions.getByType(LibraryExtension::class.java)
+    }
+}
+```
+
+#### About the Plugin class
+
+- `applyPlugins`: applies essential plugins like `android-library` and `kotlin-android`.
+- `setProjectConfig`: sets project-wide configurations like:
+  - `defaultConfig`: minimum SDK, compile SDK, and test runner.
+  - `compileOptions`: Java version compatibility.
+  - `buildTypes`: release build behavior.
+  - `KotlinCompile`: ensures Kotlin uses JVM target 18.
+
+### 3. Declaring the Plugin
+
+Inside `build.gradle.kts` of `buildSrc`, declare your plugin like this:
+
+```kotlin
+gradlePlugin {
+    plugins {
+        register("custom-gradle-plugin") {
+            id = "custom-gradle-plugin"
+            implementationClass = "CustomGradlePlugin"
+        }
+    }
+}
+```
+
+#### Explanation
+- `register("custom-gradle-plugin")`: registers the plugin.
+- `id`: the ID used to apply the plugin in other modules.
+- `implementationClass`: the fully qualified name of the plugin class.
+
+Full file example:
+
+```kotlin
+plugins {
+    `java-gradle-plugin`
+    `kotlin-dsl`
+}
+
+gradlePlugin {
+    plugins {
+        register("custom-gradle-plugin") {
+            id = "custom-gradle-plugin"
+            implementationClass = "CustomGradlePlugin"
+        }
+    }
+}
+
+repositories {
+    google()
+    mavenCentral()
+}
+
+dependencies {
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.20")
+    implementation("com.android.tools.build:gradle:8.6.0")
+}
+```
+
+### 4. Applying the Plugin in Other Modules
+
+Once your plugin is ready, remove duplicate configuration logic from your module-level `build.gradle.kts` files and apply your custom plugin:
+
+```kotlin
+plugins {
+    id("com.android.library")
+    id("org.jetbrains.kotlin.android")
+    id("custom-gradle-plugin") // 📌 Applies your custom plugin
+}
+
+android {
+    namespace = "com.example.data"
+}
+
+dependencies {
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+}
+```
+## References
+* [Using Plugins - Gradle Documentation](https://docs.gradle.org/current/userguide/plugins.html)
+* [Understanding Plugins - Gradle Documentation](https://docs.gradle.org/current/userguide/custom_plugins.html)
+* [How to Build a Custom Gradle Plugin to Share Project Config - Multi-Module Architecture](https://www.youtube.com/watch?v=kFWmL5opJNk&ab_channel=PhilippLackner)
