@@ -20,9 +20,7 @@ class CustomGradlePlugin : Plugin<Project> {
 
     private fun setProjectConfig(project: Project) {
         project.android().apply {
-
             compileSdkVersion(35)
-
             defaultConfig {
                 minSdk = 24
                 targetSdk = 35
