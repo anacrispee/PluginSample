@@ -88,11 +88,11 @@ O método `applyPlugins` é utilizado para aplicar plugins principais ao projeto
 * `android-library`: usado em projetos que criam bibliotecas Android, aplicando as configurações básicas para isto.
 * `kotlin-android`: aplica as configurações necessárias para projetos Android que usam Kotlin.
 
-O método `setProjectConfig`, por sua vez, configura:
+O método `setProjectConfig`, por sua vez, seta configurações do projeto:
 * `defaultConfig`, configurações padrão:
   * `minSdk`: versão mínima do Android necessária para rodar o app
   * `compileSdk`: SDK de compilação que será usado para compilar o código
-  * `testInstrumentationRunner`: informa ao Gradle qual runner usar para rodas os testes Android.
+  * `testInstrumentationRunner`: informa ao Gradle qual runner usar para rodar os testes Android.
 * `compileOptions`, opções de compilação:
   * `sourceCompatibility` e `targetCompatibility`: versão do Java.
 * `buildTypes`, comportamento para os tipos de build como _release_ ou _debug_.
@@ -113,8 +113,8 @@ gradlePlugin {
 ```
 #### Sobre o registro do Plugin
 * `gradlePlugin`: este bloco é onde será registrado o plugin com o Gradle.
-* `register("custom-gradle-plugin")`: registra o plugin com o nome indicado dentro das aspas. Este é o nome que será referenciado para usar o plugin em outros módulos.
-* `id`: ID do plugin, aplica o plugin em projetos Gradle.
+* `register("custom-gradle-plugin")`: registra o plugin com o nome indicado dentro das aspas.
+* `id`: ID do plugin, é com ele que você aplica o plugin em projetos Gradle.
 * `implementationClass`: define a classe de implementação do plugin, onde está a lógica dele.
 
 O arquivo `build.gradle.kts` do `buildSrc` completo ficará assim:
