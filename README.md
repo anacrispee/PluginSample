@@ -107,14 +107,47 @@ O método `applyPlugins` é utilizado para aplicar plugins principais ao projeto
 
 O método `setProjectConfig`, por sua vez, seta configurações do projeto:
 * `defaultConfig`, configurações padrão:
-  * `minSdk`: versão mínima do Android necessária para rodar o app
-  * `compileSdk`: SDK de compilação que será usado para compilar o código
+  * `compileSdkVersion`: versão do SDK de compilação que será usado para compilar o código.
+  * `minSdk`: versão mínima do Android necessária para rodar o app.
+  * `targetSdk`: informa ao sistema Android que o app foi testado e é compatível até a API 35 (Android 14).
+  * `versionCode`: usado internamente pelo Android para diferenciar versões. Esse número precisa aumentar a cada release para ser aceito na Play Store.
+  * `versionName`: o nome da versão que aparece para o usuário.
   * `testInstrumentationRunner`: informa ao Gradle qual runner usar para rodar os testes Android.
 * `compileOptions`, opções de compilação:
-  * `sourceCompatibility` e `targetCompatibility`: versão do Java.
-* `buildTypes`, comportamento para os tipos de build como _release_ ou _debug_.
+  * `sourceCompatibility` e `targetCompatibility`: versões do Java.
+ 
+O bloco de `project.tasks.withType(KotlinCompile::class.java).configureEach` configura as opções do compilador Kotlin para que o `jvmTarget` seja o de valor desejado, garantindo que o código compilado seja compatível.
 
-Já o bloco de `project.tasks.withType(KotlinCompile::class.java).configureEach` configura as opções do compilador Kotlin para que o `jvmTarget` seja o de valor desejado, garantindo que o código compilado seja compatível.
+```kotlin
+            val proguardFile = "proguard-rules.pro"
+            when (this) {
+                is LibraryExtension -> defaultConfig {
+                    consumerProguardFiles(proguardFile)
+                }
+
+                is AppExtension -> buildTypes {
+                    getByName("release") {
+                        isMinifyEnabled = true
+                        isShrinkResources = true
+                        debuggable(false)
+                        proguardFile(proguardFile)
+                    }
+
+                    getByName("debug") {
+                        isMinifyEnabled = false
+                        isShrinkResources = false
+                        debuggable(true)
+                        proguardFile(proguardFile)
+                    }
+                }
+            }
+```
+O trecho acima, por sua vez, tem como objetivo verificar se módulo é library (data, data_remote, data_local, etc, que foi criado) ou é o app (principal).
+Ele configurará dois tipos de build: release e debug, com as seguintes propriedades:
+* `isMinifyEnabled`: ativa o ProGuard ou R8 para ofuscar e reduzir o código.
+* `isShrinkResources`: remove recursos (imagens, strings, etc.) não usados.
+* `debuggable()`: impede depuração — essencial para builds de produção.
+* `proguardFile(...)`: define qual arquivo .pro usar com regras personalizadas.
 
 ### 3. Declarando o Plugin
 No arquivo `build.gradle.kts` do módulo de `buildSrc`, declare e configure o Plugin que está sendo criado com o seguinte trecho:
